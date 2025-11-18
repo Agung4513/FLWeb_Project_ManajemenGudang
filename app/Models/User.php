@@ -9,12 +9,9 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
      * @var list<string>
      */
     protected $fillable = [
@@ -23,9 +20,22 @@ class User extends Authenticatable
         'password',
     ];
 
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function restockOrdersAsManager()
+    {
+        return $this->hasMany(RestockOrder::class, 'manager_id');
+    }
+
+    public function restockOrdersAsSupplier()
+    {
+        return $this->hasMany(RestockOrder::class, 'supplier_id');
+    }
+
     /**
-     * The attributes that should be hidden for serialization.
-     *
      * @var list<string>
      */
     protected $hidden = [
@@ -33,9 +43,18 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function getDashboardRoute()
+    {
+        return match ($this->role) {
+            'admin'     => route('admin.dashboard'),
+            'manager'   => route('manager.dashboard'),
+            'staff'     => route('staff.dashboard'),
+            'supplier'  => route('supplier.dashboard'),
+            default     => route('home'),
+        };
+    }
+
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array

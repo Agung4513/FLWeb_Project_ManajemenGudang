@@ -6,5 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class RestockItem extends Model
 {
-    //
+    protected $fillable = ['restock_order_id', 'product_id', 'quantity'];
+
+    public function restockOrder()
+    {
+        return $this->belongsTo(RestockOrder::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

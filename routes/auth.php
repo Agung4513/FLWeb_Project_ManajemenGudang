@@ -35,6 +35,18 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
+Route::get('/dashboard', function () {
+    $role = auth()->user()->role;
+
+    return match ($role) {
+        'admin'     => redirect()->route('admin.dashboard'),
+        'manager'   => redirect()->route('manager.dashboard'),
+        'staff'     => redirect()->route('staff.dashboard'),
+        'supplier'  => redirect()->route('supplier.dashboard'),
+        default     => redirect()->route('home'),
+    };
+})->middleware(['auth'])->name('dashboard');
+
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
