@@ -1,22 +1,27 @@
 @extends('layouts.app')
 
-@section('sidebar')
-    <div class="w-64 bg-gray-800 text-white p-4 h-screen">
-        <h2 class="text-2xl font-bold mb-6">Manager Panel</h2>
-        <nav>
-            <ul>
-                <li class="mb-2"><a href="{{ route('manager.dashboard') }}" class="hover:text-gray-300">Beranda</a></li>
-                <li class="mb-2"><a href="{{ route('manager.transactions.index') }}" class="hover:text-gray-300">Transaksi</a></li>
-                <li class="mb-2"><a href="{{ route('manager.restock-orders.index') }}" class="hover:text-gray-300">Restock</a></li>
-                <li class="mb-2"><a href="{{ route('manager.reports') }}" class="hover:text-gray-300">Laporan</a></li>
-            </ul>
-        </nav>
-    </div>
+@section('title', 'Dashboard Manager')
+
+@section('header')
+    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        Dashboard Manager
+    </h2>
 @endsection
 
 @section('content')
-    <div class="p-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-4">Dashboard Manager</h1>
-        <p class="text-gray-600">Selamat datang, Manager! Kelola transaksi, restock, dan laporan di sini.</p>
+<div class="py-12">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 text-gray-900">
+
+                    <div class="flex-1">
+                        <h1 class="text-3xl font-bold text-gray-900 mb-4">Selamat datang, Manager!</h1>
+                        <p class="text-lg text-gray-600">Kelola produk, transaksi, restock, dan laporan dengan mudah.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
+</div>
 @endsection

@@ -1,23 +1,22 @@
 @extends('layouts.app')
 
-@section('sidebar')
-    <div class="w-64 bg-gray-800 text-white p-4 h-screen">
-        <h2 class="text-2xl font-bold mb-6">Admin Panel</h2>
-        <nav>
-            <ul>
-                <li class="mb-2"><a href="{{ route('admin.dashboard') }}" class="hover:text-gray-300">Beranda</a></li>
-                <li class="mb-2"><a href="{{ route('admin.products.index') }}" class="hover:text-gray-300">Produk</a></li>
-                <li class="mb-2"><a href="{{ route('admin.categories.index') }}" class="hover:text-gray-300">Kategori</a></li>
-                {{-- <li class="mb-2"><a href="{{ route('admin.users.index') }}" class="hover:text-gray-300">Pengguna</a></li> --}}
-                <li class="mb-2"><a href="{{ route('admin.reports') }}" class="hover:text-gray-300">Laporan</a></li>
-            </ul>
-        </nav>
-    </div>
+@section('title', 'Dashboard Admin')
+
+@section('header')
+    <h2 class="font-semibold text-xl text-gray-800 leading-tight">Dashboard Admin</h2>
 @endsection
 
 @section('content')
-    <div class="p-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-4">Dashboard Admin</h1>
-        <p class="text-gray-600">Selamat datang, Admin! Kelola produk, kategori, dan pengguna di sini.</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex gap-8">
+
+        <div class="flex-1">
+            <div class="bg-white shadow rounded-lg p-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">Selamat datang, Admin!</h1>
+                <p class="text-lg text-gray-600">Kelola produk, kategori, transaksi, dan laporan dengan mudah.</p>
+            </div>
+        </div>
+
     </div>
+</div>
 @endsection

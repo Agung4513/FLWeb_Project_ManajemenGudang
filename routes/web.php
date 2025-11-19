@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CategoryController;
 
 require __DIR__.'/auth.php';
 
@@ -36,5 +38,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/orders', fn() => view('supplier.orders'))->name('orders');
         Route::resource('restock-orders', \App\Http\Controllers\RestockOrderController::class)
             ->only(['index', 'show']);
+    });
+    Route::middleware(['auth', 'role:admin,manager'])
+        ->group(function () {
+
+        Route::resource('products', ProductController::class);
+
+        Route::resource('categories', CategoryController::class);
     });
 });
