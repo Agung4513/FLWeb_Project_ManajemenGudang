@@ -53,6 +53,11 @@ class User extends Authenticatable
         };
     }
 
+    public function getDashboardUrl()
+    {
+        return route($this->getDashboardRoute());
+    }
+
     /**
      * @return array<string, string>
      */

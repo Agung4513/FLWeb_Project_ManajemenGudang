@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\RestockOrder;
+use App\Models\User;
 
 class HomeController extends Controller
 {
@@ -23,7 +25,25 @@ class HomeController extends Controller
 
     public function supplierDashboard()
     {
-        return view('supplier.dashboard');
+        $totalOrders = RestockOrder::where('supplier_id', auth()->id())->count();
+        $pendingOrders = RestockOrder::where('supplier_id', auth()->id())
+                                    ->where('status', 'pending')
+                                    ->count();
+        $confirmedOrders = RestockOrder::where('supplier_id', auth()->id())
+                                    ->whereIn('status', ['confirmed_by_supplier', 'in_transit', 'received'])
+                                    ->count();
+        $latestPending = RestockOrder::where('supplier_id', auth()->id())
+                                    ->where('status', 'pending')
+                                    ->latest()
+                                    ->take(5)
+                                    ->get();
+
+        return view('supplier.dashboard', compact(
+            'totalOrders',
+            'pendingOrders',
+            'confirmedOrders',
+            'latestPending'
+        ));
     }
 
     public function adminReports()

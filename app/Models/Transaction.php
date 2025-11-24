@@ -8,8 +8,14 @@ class Transaction extends Model
 {
     protected $fillable = [
         'transaction_number', 'type', 'date', 'user_id',
-        'supplier_id', 'customer_name', 'status', 'notes'
+        'supplier_id', 'customer_name', 'status', 'notes',
+        'total_amount', 'total_profit'
     ];
+
+    public function items()
+    {
+        return $this->hasMany(TransactionItem::class);
+    }
 
     public function user()
     {
@@ -21,8 +27,7 @@ class Transaction extends Model
         return $this->belongsTo(User::class, 'supplier_id');
     }
 
-    public function items()
-    {
-        return $this->hasMany(TransactionItem::class);
-    }
+    protected $casts = [
+        'date' => 'date', 
+    ];
 }

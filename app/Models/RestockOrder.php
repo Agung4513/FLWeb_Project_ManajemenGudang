@@ -7,9 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class RestockOrder extends Model
 {
     protected $fillable = [
-        'po_number', 'supplier_id', 'manager_id', 'order_date',
-        'expected_delivery_date', 'status', 'notes'
+        'po_number', 'manager_id', 'supplier_id', 'order_date',
+        'expected_delivery_date', 'status', 'notes',
+        'confirmed_by_supplier_at', 'supplier_notes' 
     ];
+
+    protected $casts = [
+        'order_date' => 'date:Y-m-d',
+        'expected_delivery_date' => 'date:Y-m-d',];
 
     public function supplier()
     {
