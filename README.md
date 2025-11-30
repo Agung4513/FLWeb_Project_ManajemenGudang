@@ -10,13 +10,13 @@ Sistem Manajemen Gudang Terintegrasi (WMS)
 
 Gudang Jaya adalah aplikasi web Warehouse Management System (WMS) modern yang dirancang untuk menangani kompleksitas operasional gudang. Aplikasi ini memisahkan peran secara tegas antara administrasi, operasional fisik, dan manajemen stok dengan alur kerja digital yang terstruktur.
 
-Dibuat untuk memenuhi standar keamanan data dengan validasi berlapis (Maker-Checker Principle) dan integrasi langsung dengan supplier.
+💡 Fokus Utama: Keamanan data dengan validasi berlapis (Maker-Checker Principle) dan integrasi langsung dengan supplier.
 
 🚀 Fitur Unggulan
 
 1. Sistem Multi-Role (RBAC)
 
-Akses fitur dibatasi secara ketat berdasarkan peran pengguna:
+Akses fitur dibatasi secara ketat berdasarkan peran pengguna untuk menjaga integritas data:
 
 Role
 
@@ -40,17 +40,17 @@ Eksternal. Login khusus untuk melihat dan mengkonfirmasi pesanan (PO) dari gudan
 
 2. Manajemen Transaksi (Maker-Checker)
 
-Mencegah kecurangan dan kesalahan input stok:
+Mencegah kecurangan dan kesalahan input stok dengan alur kerja bertingkat:
 
-Input: Staff membuat transaksi ➔ Status Pending.
+✅ Input: Staff membuat transaksi ➔ Status Pending.
 
-Verifikasi: Manager menerima notifikasi.
+✅ Verifikasi: Manager menerima notifikasi real-time.
 
-Approval: Manager menyetujui transaksi ➔ Stok Database Berubah.
+✅ Approval: Manager menyetujui transaksi ➔ Stok Database Berubah.
 
 3. Siklus Restock & Audit Fisik
 
-Alur pengadaan barang yang realistis:
+Alur pengadaan barang yang realistis (tidak otomatis):
 
 Manager buat PO ➔ Supplier Konfirmasi ➔ Barang Dikirim.
 
@@ -60,13 +60,13 @@ Staff wajib melakukan Input Transaksi Masuk berdasarkan fisik barang yang diteri
 
 4. Keamanan Tingkat Lanjut
 
-Middleware Satpam: Mencegah user yang statusnya "Belum Aktif" (misal Supplier baru daftar) untuk login meskipun password benar.
+🛡️ Middleware Satpam: Mencegah user yang statusnya "Belum Aktif" (misal Supplier baru daftar) untuk login meskipun password benar.
 
-Validasi Stok: Mencegah transaksi keluar jika stok tidak mencukupi.
+🔒 Validasi Stok: Mencegah transaksi keluar jika stok di sistem tidak mencukupi.
 
 ⚙️ Persyaratan Sistem
 
-Pastikan komputer Anda memiliki:
+Sebelum memulai, pastikan komputer Anda memiliki:
 
 PHP >= 8.1
 
@@ -98,7 +98,7 @@ Salin file contoh dan atur koneksi database Anda.
 cp .env.example .env
 
 
-Buka file .env dan atur:
+Buka file .env dan sesuaikan:
 
 DB_DATABASE=nama_database_anda
 DB_USERNAME=root
@@ -159,7 +159,8 @@ supplier@maju.com
 
 password
 
-⚠️ Catatan: Jika Anda mencoba fitur Register, akun baru akan berstatus Non-Aktif (Supplier Pending). Anda harus login sebagai Admin dulu untuk menyetujuinya di menu "Kelola Pengguna".
+⚠️ Catatan Penting:
+Jika Anda mencoba fitur Register, akun baru akan berstatus Non-Aktif (Supplier Pending). Anda harus login sebagai Admin terlebih dahulu untuk menyetujuinya di menu "Kelola Pengguna".
 
 🔄 Alur Kerja Sistem
 
