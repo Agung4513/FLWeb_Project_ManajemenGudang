@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
-use App\Http\Requests\StoreProductRequest;
-use App\Http\Requests\UpdateProductRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -19,26 +18,41 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::orderBy('name')->get();
-        $nextId = Product::max('id') ? Product::max('id') + 1 : 1;
+
+        $lastProduct = Product::latest('id')->first();
+        $nextId = $lastProduct ? $lastProduct->id + 1 : 1;
         $previewSku = 'PRD' . str_pad($nextId, 6, '0', STR_PAD_LEFT);
 
         return view('products.create', compact('categories', 'previewSku'));
     }
 
-    public function store(StoreProductRequest $request)
+    public function store(Request $request)
     {
-        $data = $request->validated();
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'description' => 'nullable|string',
+            'buy_price' => 'required|numeric|min:0',
+            'sell_price' => 'required|numeric|min:0',
+            'min_stock' => 'required|integer|min:0',
+            'current_stock' => 'required|integer|min:0',
+            'unit' => 'required|string',
+            'location' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+        ]);
 
-        unset($data['sku']);
+        $lastProduct = Product::latest('id')->first();
+        $nextId = $lastProduct ? $lastProduct->id + 1 : 1;
+        $data['sku'] = 'PRD' . str_pad($nextId, 6, '0', STR_PAD_LEFT);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
         }
 
-        $product = Product::create($data);
+        Product::create($data);
 
         return redirect()->route('products.index')
-            ->with('success', "Produk berhasil ditambahkan! SKU: {$product->sku}");
+            ->with('success', "Produk berhasil ditambahkan! SKU: {$data['sku']}");
     }
 
     public function show(Product $product)
@@ -53,11 +67,19 @@ class ProductController extends Controller
         return view('products.edit', compact('product', 'categories'));
     }
 
-    public function update(UpdateProductRequest $request, Product $product)
+    public function update(Request $request, Product $product)
     {
-        $data = $request->validated();
-
-        unset($data['sku']);
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'description' => 'nullable|string',
+            'buy_price' => 'required|numeric|min:0',
+            'sell_price' => 'required|numeric|min:0',
+            'min_stock' => 'required|integer|min:0',
+            'unit' => 'required|string',
+            'location' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+        ]);
 
         if ($request->hasFile('image')) {
             if ($product->image) {
@@ -74,6 +96,10 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if ($product->current_stock > 0) {
+            return back()->with('error', 'Gagal hapus! Produk masih memiliki stok. Kosongkan stok via transaksi keluar terlebih dahulu.');
+        }
+
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }

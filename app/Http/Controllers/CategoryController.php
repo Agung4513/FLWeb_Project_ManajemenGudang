@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::latest()->paginate(15);
+        $categories = Category::withCount('products')->latest()->paginate(10);
+
         return view('categories.index', compact('categories'));
     }
 
@@ -28,8 +28,7 @@ class CategoryController extends Controller
 
         Category::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description
+            'description' => $request->description,
         ]);
 
         return redirect()->route('categories.index')
@@ -50,7 +49,6 @@ class CategoryController extends Controller
 
         $category->update([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
             'description' => $request->description
         ]);
 
@@ -61,10 +59,11 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         if ($category->products()->count() > 0) {
-            return back()->with('error', 'Tidak bisa hapus! Kategori ini masih digunakan oleh produk.');
+            return back()->with('error', 'Gagal hapus! Kategori ini masih memiliki produk. Hapus atau pindahkan produknya terlebih dahulu.');
         }
 
         $category->delete();
+
         return redirect()->route('categories.index')
             ->with('success', 'Kategori berhasil dihapus!');
     }

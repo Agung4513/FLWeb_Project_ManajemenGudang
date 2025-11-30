@@ -10,17 +10,17 @@ class HomeController extends Controller
 {
     public function adminDashboard()
     {
-        return view('admin.dashboard');
+        return view('admin/dashboard');
     }
 
     public function managerDashboard()
     {
-        return view('manager.dashboard');
+        return view('manager/dashboard');
     }
 
     public function staffDashboard()
     {
-        return view('staff.dashboard');
+        return view('staff/dashboard');
     }
 
     public function supplierDashboard()
@@ -38,7 +38,7 @@ class HomeController extends Controller
                                     ->take(5)
                                     ->get();
 
-        return view('supplier.dashboard', compact(
+        return view('supplier/dashboard', compact(
             'totalOrders',
             'pendingOrders',
             'confirmedOrders',
@@ -58,11 +58,11 @@ class HomeController extends Controller
 
     public function staffStock()
     {
-        return view('staff.stock');
+        return view('staff/stock');
     }
 
     public function supplierOrders()
     {
-        return view('supplier.orders');
+        return view('supplier/orders');
     }
 }

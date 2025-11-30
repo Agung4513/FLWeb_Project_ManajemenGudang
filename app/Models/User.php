@@ -17,22 +17,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'is_active',
     ];
-
-    public function transactions()
-    {
-        return $this->hasMany(Transaction::class);
-    }
-
-    public function restockOrdersAsManager()
-    {
-        return $this->hasMany(RestockOrder::class, 'manager_id');
-    }
-
-    public function restockOrdersAsSupplier()
-    {
-        return $this->hasMany(RestockOrder::class, 'supplier_id');
-    }
 
     /**
      * @var list<string>
@@ -42,22 +29,6 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    public function getDashboardRoute()
-    {
-        return match ($this->role) {
-            'admin'     => route('admin.dashboard'),
-            'manager'   => route('manager.dashboard'),
-            'staff'     => route('staff.dashboard'),
-            'supplier'  => route('supplier.dashboard'),
-            default     => route('home'),
-        };
-    }
-
-    public function getDashboardUrl()
-    {
-        return route($this->getDashboardRoute());
-    }
-
     /**
      * @return array<string, string>
      */
@@ -66,6 +37,23 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
+    }
+
+    public function hasRole($role)
+    {
+        return $this->role === $role;
+    }
+
+    public function getDashboardRoute()
+    {
+        return match($this->role) {
+            'admin' => 'admin.dashboard',
+            'manager' => 'manager.dashboard',
+            'staff' => 'staff.dashboard',
+            'supplier' => 'supplier.dashboard',
+            default => 'login',
+        };
     }
 }

@@ -1,100 +1,88 @@
 @extends('layouts.app')
-@section('page-title', 'Detail Produk: ' . $product->sku)
+@section('title', 'Detail Produk')
+@section('page-title', 'Detail Produk')
 
 @section('content')
-<div class="max-w-5xl mx-auto py-10">
-    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+<div class="max-w-6xl mx-auto py-8">
+    <a href="{{ route('products.index') }}" class="inline-flex items-center text-slate-500 hover:text-indigo-600 font-medium mb-6 transition">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Daftar
+    </a>
 
-        <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-10 text-white">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h1 class="text-4xl font-extrabold">{{ $product->name }}</h1>
-                    <p class="text-xl opacity-90 mt-2">Kode Produk: <span class="font-mono text-2xl">{{ $product->sku }}</span></p>
-                </div>
-                <div class="text-right">
-                    <p class="text-5xl font-black">{{ $product->formatted_sell_price }}</p>
-                    <p class="text-sm opacity-80">Harga Jual</p>
-                </div>
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-indigo-600">
+        <div class="grid grid-cols-1 md:grid-cols-12">
+
+            <div class="md:col-span-5 bg-gray-50 p-8 flex items-center justify-center border-r border-gray-100 min-h-[400px]">
+                @if($product->image)
+                    <img src="{{ asset('storage/' . $product->image) }}" class="max-h-80 w-auto object-contain drop-shadow-2xl rounded-lg transform hover:scale-105 transition duration-500">
+                @else
+                    <div class="text-center text-gray-400">
+                        <i class="fa-solid fa-image text-8xl opacity-30 mb-4"></i>
+                        <p class="text-sm">Tidak ada gambar produk</p>
+                    </div>
+                @endif
             </div>
-        </div>
 
-        <div class="p-10">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div class="md:col-span-7 p-8 md:p-10 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+                            {{ $product->category->name ?? 'Uncategorized' }}
+                        </span>
 
-                <div class="lg:col-span-1">
-                    <div class="bg-gray-50 rounded-2xl p-6 border-2 border-dashed border-gray-300 text-center">
-                        @if($product->image)
-                            <img src="{{ asset('storage/' . $product->image) }}"
-                                 alt="{{ $product->name }}"
-                                 class="w-full h-80 object-cover rounded-xl shadow-lg">
-                        @else
-                            <div class="bg-gray-200 border-2 border-dashed rounded-xl w-full h-80 flex items-center justify-center">
-                                <div>
-                                    <svg class="w-20 h-20 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                    </svg>
-                                    <p class="text-gray-500 mt-4 text-lg">Belum ada gambar</p>
-                                </div>
-                            </div>
+                        @if($product->isLowStock())
+                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold animate-pulse flex items-center">
+                                <i class="fa-solid fa-triangle-exclamation mr-1"></i> Stok Menipis
+                            </span>
                         @endif
                     </div>
+
+                    <h1 class="text-4xl font-extrabold text-slate-900 mb-2">{{ $product->name }}</h1>
+                    <div class="text-lg font-mono font-bold text-slate-400 mb-6 flex items-center">
+                        <i class="fa-solid fa-barcode mr-2"></i> {{ $product->sku }}
+                    </div>
+
+                    <p class="text-slate-600 leading-relaxed mb-8 border-l-4 border-indigo-100 pl-4">
+                        {{ $product->description ?: 'Tidak ada deskripsi detail untuk produk ini.' }}
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-6 mb-8">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p class="text-xs font-bold text-slate-400 uppercase">Harga Jual</p>
+                            <p class="text-2xl font-bold text-emerald-600">Rp {{ number_format($product->sell_price, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p class="text-xs font-bold text-slate-400 uppercase">Stok Fisik</p>
+                            <p class="text-2xl font-bold text-slate-800">
+                                {{ $product->current_stock }}
+                                <span class="text-sm font-medium text-slate-500">{{ $product->unit }}</span>
+                            </p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p class="text-xs font-bold text-slate-400 uppercase">Harga Beli</p>
+                            <p class="text-xl font-bold text-slate-600">Rp {{ number_format($product->buy_price, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p class="text-xs font-bold text-slate-400 uppercase">Lokasi Rak</p>
+                            <p class="text-xl font-bold text-slate-600">{{ $product->location ?? '-' }}</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="lg:col-span-2 space-y-8">
-                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-8 rounded-2xl border-2 {{ $product->is_low_stock ? 'from-red-50 to-pink-50 border-red-200' : 'border-green-200' }}">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="text-2xl font-bold {{ $product->is_low_stock ? 'text-red-700' : 'text-green-700' }}">
-                                    Stok Saat Ini: {{ $product->current_stock }} {{ $product->unit }}
-                                </p>
-                                @if($product->is_low_stock)
-                                    <p class="text-red-600 font-bold mt-2">STOK RENDAH! Segera restock!</p>
-                                @endif
-                            </div>
-                            <div class="text-right">
-                                <p class="text-lg text-gray-600">Minimum Stok</p>
-                                <p class="text-3xl font-black text-gray-800">{{ $product->min_stock }} {{ $product->unit }}</p>
-                            </div>
-                        </div>
-                    </div>
+                @if(in_array(auth()->user()->role, ['admin', 'manager']))
+                <div class="flex gap-4 pt-6 border-t border-gray-100">
+                    <a href="{{ route('products.edit', $product) }}"
+                       class="flex-1 bg-amber-50 text-amber-600 text-center py-3 rounded-xl font-bold hover:bg-amber-100 transition border border-amber-200">
+                        <i class="fa-solid fa-pen mr-2"></i> Edit Data
+                    </a>
 
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <p class="text-sm text-gray-500 uppercase tracking-wider">Kategori</p>
-                            <p class="text-xl font-bold text-indigo-700">{{ $product->category->name }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 uppercase tracking-wider">Satuan</p>
-                            <p class="text-xl font-bold">{{ ucfirst($product->unit) }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 uppercase tracking-wider">Harga Beli</p>
-                            <p class="text-xl font-semibold text-gray-700">{{ $product->formatted_buy_price }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 uppercase tracking-wider">Lokasi Gudang</p>
-                            <p class="text-xl font-medium">{{ $product->location ?? 'Belum ditentukan' }}</p>
-                        </div>
-                    </div>
-
-                    @if($product->description)
-                        <div class="bg-gray-50 p-8 rounded-2xl">
-                            <p class="text-sm text-gray-500 uppercase tracking-wider mb-3">Deskripsi Produk</p>
-                            <p class="text-gray-700 leading-relaxed text-lg whitespace-pre-line">{{ $product->description }}</p>
-                        </div>
+                    @if(auth()->user()->role == 'manager' && $product->isLowStock())
+                        <a href="{{ route('restock-orders.create', ['product_id' => $product->id]) }}"
+                           class="flex-1 bg-indigo-600 text-white text-center py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                            <i class="fa-solid fa-cart-plus mr-2"></i> Restock
+                        </a>
                     @endif
-
-                    <div class="flex gap-4 pt-6 border-t">
-                        <a href="{{ route('products.edit', $product) }}"
-                           class="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg transform hover:scale-105">
-                            Edit Produk
-                        </a>
-                        <a href="{{ route('products.index') }}"
-                           class="px-8 py-4 bg-gray-600 text-white rounded-xl font-bold hover:bg-gray-700 transition">
-                            Kembali ke Daftar
-                        </a>
-                    </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>

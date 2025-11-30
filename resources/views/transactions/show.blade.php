@@ -1,79 +1,123 @@
 @extends('layouts.app')
+
+@section('title', 'Detail Transaksi ' . $transaction->transaction_number)
+@section('page-title', 'Detail Transaksi')
+
 @section('content')
-<div class="max-w-4xl mx-auto py-10">
-    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-8">
-            <h1 class="text-4xl font-bold">INVOICE</h1>
-            <p class="text-2xl mt-2">{{ $transaction->transaction_number }}</p>
-        </div>
+<div class="max-w-5xl mx-auto py-8">
+    <a href="{{ route(auth()->user()->role . '.transactions.index') }}" class="inline-flex items-center text-slate-500 hover:text-indigo-600 font-medium mb-6 transition">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Riwayat
+    </a>
 
-        <div class="p-8">
-            <div class="grid grid-cols-2 gap-8 mb-8">
-                <div>
-                    <p class="text-gray-600">Tanggal</p>
-                    <p class="text-2xl font-bold">{{ $transaction->date->format('d F Y') }}</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-gray-600">Tipe Transaksi</p>
-                    <p class="text-2xl font-bold text-green-600">
-                        {{ $transaction->type == 'outgoing' ? 'PENJUALAN' : 'RESTOCK' }}
-                    </p>
-                </div>
-            </div>
-
-            @if($transaction->customer_name)
-            <div class="mb-6">
-                <p class="text-gray-600">Pelanggan</p>
-                <p class="text-xl font-bold">{{ $transaction->customer_name }}</p>
-            </div>
-            @endif
-
-            @if($transaction->supplier)
-            <div class="mb-6">
-                <p class="text-gray-600">Supplier</p>
-                <p class="text-xl font-bold">{{ $transaction->supplier->name }}</p>
-            </div>
-            @endif
-
-            <table class="w-full mt-8">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="text-left py-3 px-4">Produk</th>
-                        <th class="text-center py-3 px-4">Qty</th>
-                        <th class="text-right py-3 px-4">Harga</th>
-                        <th class="text-right py-3 px-4">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($transaction->items as $item)
-                    <tr class="border-b">
-                        <td class="py-4 px-4">{{ $item->product->name }}</td>
-                        <td class="text-center py-4 px-4">{{ $item->quantity }}</td>
-                        <td class="text-right py-4 px-4">Rp {{ number_format($item->price_at_transaction, 0, ',', '.') }}</td>
-                        <td class="text-right py-4 px-4 font-bold">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-            <div class="mt-8 text-right border-t-4 border-indigo-600 pt-6">
-                <p class="text-3xl font-black text-green-700">
-                    TOTAL: Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+        <div class="px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-50">
+            <div>
+                <h1 class="text-2xl font-black text-slate-800">{{ $transaction->transaction_number }}</h1>
+                <p class="text-slate-500 text-sm mt-1">
+                    Dibuat oleh <span class="font-bold text-slate-700">{{ $transaction->user->name }}</span> pada {{ \Carbon\Carbon::parse($transaction->date)->format('d F Y') }}
                 </p>
-                @if($transaction->type == 'outgoing')
-                <p class="text-xl text-gray-600 mt-2">
-                    Keuntungan: Rp {{ number_format($transaction->total_profit, 0, ',', '.') }}
-                </p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                @if($transaction->status === 'pending')
+                    <span class="px-4 py-2 rounded-xl bg-orange-100 text-orange-700 font-bold border border-orange-200 flex items-center shadow-sm">
+                        <span class="w-2.5 h-2.5 bg-orange-500 rounded-full mr-2 animate-pulse"></span> Menunggu Approval
+                    </span>
+                @elseif(in_array($transaction->status, ['approved', 'verified', 'completed']))
+                    <span class="px-4 py-2 rounded-xl bg-emerald-100 text-emerald-700 font-bold border border-emerald-200 flex items-center shadow-sm">
+                        <i class="fa-solid fa-check-circle mr-2"></i> Selesai / Disetujui
+                    </span>
+                @else
+                    <span class="px-4 py-2 rounded-xl bg-red-100 text-red-700 font-bold border border-red-200 flex items-center shadow-sm">
+                        <i class="fa-solid fa-xmark-circle mr-2"></i> Ditolak
+                    </span>
                 @endif
             </div>
+        </div>
 
-            <div class="mt-10 text-center">
-                <a href="{{ route('transactions.index') }}"
-                   class="bg-indigo-600 text-white px-12 py-4 rounded-xl text-xl font-bold hover:bg-indigo-700 transition">
-                    Kembali ke Daftar
-                </a>
+        <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                <p class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">Tipe Transaksi</p>
+                <p class="text-xl font-black {{ $transaction->type == 'incoming' ? 'text-blue-600' : 'text-red-600' }}">
+                    {{ $transaction->type == 'incoming' ? 'Barang Masuk' : 'Barang Keluar' }}
+                </p>
+            </div>
+
+            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Pihak Terkait</p>
+                <p class="text-xl font-bold text-slate-800">
+                    {{ $transaction->customer_name ?? '-' }}
+                </p>
+            </div>
+
+            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Nilai</p>
+                <p class="text-xl font-black text-slate-800">
+                    Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}
+                </p>
             </div>
         </div>
+
+        <div class="px-8 pb-8">
+            <h3 class="text-lg font-bold text-slate-700 mb-4 border-l-4 border-indigo-500 pl-3">Rincian Barang</h3>
+            <div class="overflow-hidden rounded-xl border border-gray-200">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 text-gray-600 font-bold text-sm uppercase">
+                        <tr>
+                            <th class="px-6 py-4">Produk</th>
+                            <th class="px-6 py-4 text-center">Jumlah</th>
+                            <th class="px-6 py-4 text-right">Harga Satuan</th>
+                            <th class="px-6 py-4 text-right">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        @foreach($transaction->items as $item)
+                        <tr>
+                            <td class="px-6 py-4">
+                                <div class="font-bold text-slate-800">{{ $item->product->name }}</div>
+                                <div class="text-xs text-slate-500">{{ $item->product->sku }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-center font-bold text-slate-700">
+                                {{ $item->quantity }} {{ $item->product->unit }}
+                            </td>
+                            <td class="px-6 py-4 text-right text-slate-600">
+                                Rp {{ number_format($item->price_at_transaction, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 text-right font-bold text-emerald-600">
+                                Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if($transaction->notes)
+        <div class="px-8 pb-8">
+            <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100 text-yellow-800 text-sm">
+                <span class="font-bold block mb-1"><i class="fa-solid fa-note-sticky mr-1"></i> Catatan:</span>
+                {{ $transaction->notes }}
+            </div>
+        </div>
+        @endif
+
+        @if(auth()->user()->role === 'manager' && $transaction->status === 'pending')
+        <div class="bg-gray-50 px-8 py-6 border-t border-gray-200 flex justify-end gap-4">
+            <form action="{{ route('manager.transactions.reject', $transaction) }}" method="POST" onsubmit="return confirm('Tolak transaksi? Data akan dihapus.');">
+                @csrf @method('PATCH')
+                <button class="px-6 py-3 bg-white border border-red-200 text-red-600 font-bold rounded-xl hover:bg-red-50 transition">
+                    <i class="fa-solid fa-xmark mr-2"></i> Tolak
+                </button>
+            </form>
+
+            <form action="{{ route('manager.transactions.approve', $transaction) }}" method="POST" onsubmit="return confirm('Setujui transaksi ini?');">
+                @csrf @method('PATCH')
+                <button class="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-500/30 transition transform hover:scale-105">
+                    <i class="fa-solid fa-check mr-2"></i> Setujui Transaksi
+                </button>
+            </form>
+        </div>
+        @endif
     </div>
 </div>
 @endsection

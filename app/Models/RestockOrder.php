@@ -2,19 +2,24 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RestockOrder extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'po_number', 'manager_id', 'supplier_id', 'order_date',
-        'expected_delivery_date', 'status', 'notes',
-        'confirmed_by_supplier_at', 'supplier_notes' 
+        'po_number', 'supplier_id', 'manager_id',
+        'order_date', 'expected_delivery_date',
+        'status', 'notes', 'confirmed_by_supplier_at', 'supplier_notes'
     ];
 
     protected $casts = [
-        'order_date' => 'date:Y-m-d',
-        'expected_delivery_date' => 'date:Y-m-d',];
+        'order_date' => 'datetime',
+        'expected_delivery_date' => 'datetime',
+        'confirmed_by_supplier_at' => 'datetime',
+    ];
 
     public function supplier()
     {
@@ -29,5 +34,10 @@ class RestockOrder extends Model
     public function items()
     {
         return $this->hasMany(RestockItem::class);
+    }
+
+    public function transaction()
+    {
+        return $this->hasOne(Transaction::class);
     }
 }

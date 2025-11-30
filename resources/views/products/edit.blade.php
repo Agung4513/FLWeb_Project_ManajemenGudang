@@ -1,118 +1,117 @@
 @extends('layouts.app')
-@section('page-title', 'Edit Produk: ' . $product->name)
+@section('title', 'Edit Produk')
+@section('page-title', 'Edit Produk')
 
 @section('content')
 <div class="max-w-4xl mx-auto py-10">
-    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-700 p-10 text-white">
-            <h1 class="text-4xl font-extrabold">Edit Produk</h1>
-            <p class="text-xl opacity-90 mt-3">Kode SKU: <span class="font-mono text-2xl">{{ $product->sku }}</span> (Tidak dapat diubah)</p>
+    <a href="{{ route('products.index') }}" class="inline-flex items-center text-slate-500 hover:text-indigo-600 font-medium mb-6 transition">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Batal & Kembali
+    </a>
+
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+        <div class="bg-indigo-50 px-8 py-6 border-b border-indigo-100 flex items-center gap-4">
+            <div class="w-12 h-12 bg-white text-indigo-600 rounded-xl flex items-center justify-center text-xl shadow-sm">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Edit Produk</h2>
+                <p class="text-indigo-600 text-sm font-medium">{{ $product->name }}</p>
+            </div>
         </div>
 
-        <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data" class="p-10">
+        <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data" class="p-8 md:p-10">
             @csrf
             @method('PUT')
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                <div>
-                    <label class="block text-lg font-bold text-gray-700 mb-3">Nama Produk <span class="text-red-500">*</span></label>
-                    <input type="text" name="name" value="{{ old('name', $product->name) }}" required
-                           class="w-full border-2 border-gray-300 rounded-xl px-5 py-4 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 transition">
-                    @error('name') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                </div>
-
-                <div>
-                    <label class="block text-lg font-bold text-gray-700 mb-3">Kategori <span class="text-red-500">*</span></label>
-                    <select name="category_id" required class="w-full border-2 border-gray-300 rounded-xl px-5 py-4 focus:border-indigo-600">
-                        <option value="">-- Pilih Kategori --</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}" {{ old('category_id', $product->category_id) == $cat->id ? 'selected' : '' }}>
-                                {{ $cat->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('category_id') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                </div>
-
-                <div class="md:col-span-2 bg-gradient-to-r from-indigo-50 to-purple-50 p-8 rounded-2xl border-4 border-indigo-200">
-                    <label class="block text-xl font-bold text-indigo-800 mb-4">Kode SKU (Tetap)</label>
-                    <div class="text-5xl font-mono font-black text-indigo-700 tracking-widest">
-                        {{ $product->sku }}
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Nama Produk</label>
+                        <input type="text" name="name" value="{{ old('name', $product->name) }}" required
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-indigo-500 focus:outline-none">
                     </div>
-                    <p class="text-indigo-600 mt-4 text-lg">Kode unik ini tidak dapat diubah.</p>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Kategori</label>
+                        <select name="category_id" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-indigo-500 bg-white">
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}" {{ $product->category_id == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">SKU (Permanen)</label>
+                            <span class="text-lg font-mono font-black text-indigo-600">{{ $product->sku }}</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Stok Saat Ini</label>
+                            <span class="text-lg font-black text-slate-700">{{ $product->current_stock }} <span class="text-xs font-normal">{{ $product->unit }}</span></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Deskripsi</label>
+                        <textarea name="description" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-indigo-500 focus:outline-none">{{ old('description', $product->description) }}</textarea>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-lg font-bold text-gray-700 mb-3">Stok Saat Ini <span class="text-red-500">*</span></label>
-                    <input type="number" name="current_stock" value="{{ old('current_stock', $product->current_stock) }}" required min="0"
-                           class="w-full border-2 border-gray-300 rounded-xl px-5 py-4">
-                    @error('current_stock') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                </div>
+                <div class="space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Harga Beli</label>
+                            <input type="number" name="buy_price" value="{{ old('buy_price', $product->buy_price) }}" required min="0"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Harga Jual</label>
+                            <input type="number" name="sell_price" value="{{ old('sell_price', $product->sell_price) }}" required min="0"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-indigo-500">
+                        </div>
+                    </div>
 
-                <div>
-                    <label class="block text-lg font-bold text-gray-700 mb-3">Minimum Stok <span class="text-red-500">*</span></label>
-                    <input type="number" name="min_stock" value="{{ old('min_stock', $product->min_stock) }}" required min="1"
-                           class="w-full border-2 border-gray-300 rounded-xl px-5 py-4">
-                    @error('min_stock') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Min. Alert Stok</label>
+                            <input type="number" name="min_stock" value="{{ old('min_stock', $product->min_stock) }}" required min="0"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Satuan</label>
+                            <select name="unit" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium bg-white">
+                                @foreach(['pcs', 'box', 'kg', 'liter'] as $u)
+                                    <option value="{{ $u }}" {{ $product->unit == $u ? 'selected' : '' }}>{{ ucfirst($u) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
 
-                <div>
-                    <label class="block text-lg font-bold text-gray-700 mb-3">Satuan <span class="text-red-500">*</span></label>
-                    <select name="unit" required class="w-full border-2 border-gray-300 rounded-xl px-5 py-4">
-                        @foreach(['pcs', 'box', 'kg', 'liter', 'botol', 'sachet'] as $u)
-                            <option value="{{ $u }}" {{ old('unit', $product->unit) == $u ? 'selected' : '' }}>
-                                {{ ucfirst($u) }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Lokasi Rak</label>
+                        <input type="text" name="location" value="{{ old('location', $product->location) }}"
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-indigo-500">
+                    </div>
 
-                <div>
-                    <label class="block text-lg font-bold text-gray-700 mb-3">Lokasi Gudang</label>
-                    <input type="text" name="location" value="{{ old('location', $product->location) }}"
-                           class="w-full border-2 border-gray-300 rounded-xl px-5 py-4" placeholder="Contoh: Rak A-12">
-                </div>
-
-                <div>
-                    <label class="block text-lg font-bold text-gray-700 mb-3">Harga Beli (Rp) <span class="text-red-500">*</span></label>
-                    <input type="number" name="buy_price" value="{{ old('buy_price', $product->buy_price) }}" required min="1"
-                           class="w-full border-2 border-gray-300 rounded-xl px-5 py-4">
-                    @error('buy_price') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                </div>
-
-                <div>
-                    <label class="block text-lg font-bold text-gray-700 mb-3">Harga Jual (Rp) <span class="text-red-500">*</span></label>
-                    <input type="number" name="sell_price" value="{{ old('sell_price', $product->sell_price) }}" required min="1"
-                           class="w-full border-2 border-gray-300 rounded-xl px-5 py-4">
-                    @error('sell_price') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-lg font-bold text-gray-700 mb-3">Gambar Produk Saat Ini</label>
-                    @if($product->image)
-                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-64 h-64 object-cover rounded-xl shadow-lg">
-                    @else
-                        <p class="text-gray-500">Belum ada gambar</p>
-                    @endif
-                    <input type="file" name="image" accept="image/*" class="mt-4 w-full">
-                    <p class="text-sm text-gray-500">Biarkan kosong jika tidak ingin ganti gambar</p>
-                </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-lg font-bold text-gray-700 mb-3">Deskripsi Produk</label>
-                    <textarea name="description" rows="6" class="w-full border-2 border-gray-300 rounded-xl px-5 py-4">{{ old('description', $product->description) }}</textarea>
+                    <div class="flex gap-4 items-start">
+                        @if($product->image)
+                            <div class="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                                <img src="{{ asset('storage/' . $product->image) }}" class="w-full h-full object-cover">
+                            </div>
+                        @endif
+                        <div class="flex-1">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Ganti Gambar</label>
+                            <input type="file" name="image" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition"/>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="mt-12 flex justify-end gap-6">
-                <a href="{{ route('products.index') }}"
-                   class="px-10 py-5 bg-gray-600 text-white rounded-xl font-bold text-xl hover:bg-gray-700 transition transform hover:scale-105">
-                    Batal
-                </a>
-                <button type="submit"
-                        class="px-12 py-5 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl font-bold text-xl hover:from-green-700 hover:to-emerald-800 transition shadow-2xl transform hover:scale-110">
-                    Update Produk
+            <div class="mt-10 pt-6 border-t border-gray-100 flex justify-end gap-4">
+                <button type="submit" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg hover:scale-105 transition transform">
+                    Simpan Perubahan
                 </button>
             </div>
         </form>

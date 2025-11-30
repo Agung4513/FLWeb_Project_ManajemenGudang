@@ -4,13 +4,11 @@
 @section('content')
 <div class="max-w-7xl mx-auto py-12 px-6">
     <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <!-- Header -->
         <div class="bg-gradient-to-r from-purple-700 to-pink-700 text-white p-12 text-center">
             <h1 class="text-7xl font-bold">{{ $restockOrder->po_number }}</h1>
             <p class="text-4xl mt-4">PURCHASE ORDER - GUDANG JAYA</p>
         </div>
 
-        <!-- Status -->
         <div class="text-center py-10">
             <span class="inline-block px-12 py-6 rounded-full text-3xl font-bold
                 @if($restockOrder->status == 'pending') bg-yellow-100 text-yellow-800
@@ -20,7 +18,6 @@
             </span>
         </div>
 
-        <!-- Form Konfirmasi -->
         @if($restockOrder->status === 'pending')
         <div class="bg-gradient-to-r from-amber-50 to-yellow-50 border-8 border-amber-400 rounded-3xl p-12 mb-12 text-center">
             <h3 class="text-5xl font-bold text-amber-800 mb-8">KONFIRMASI PENERIMAAN PESANAN</h3>
@@ -53,7 +50,6 @@
         </div>
         @endif
 
-        <!-- Info PO -->
         <div class="grid grid-cols-2 gap-8 p-10">
             <div class="bg-gray-50 p-8 rounded-2xl">
                 <h3 class="text-2xl font-bold mb-4">Estimasi Tiba</h3>
@@ -67,7 +63,6 @@
             </div>
         </div>
 
-        <!-- Tabel Item — HARGA MUNCUL DARI buy_price -->
         <div class="p-10 bg-gray-50 rounded-2xl mx-10 mb-10">
             <h3 class="text-4xl font-bold text-center mb-10 text-gray-800">DAFTAR ITEM DIPESAN</h3>
             <table class="w-full bg-white rounded-xl shadow-lg">

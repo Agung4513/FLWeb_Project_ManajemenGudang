@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RestockItem extends Model
 {
-    protected $fillable = ['restock_order_id', 'product_id', 'quantity'];
+    use HasFactory;
 
-    public function restockOrder()
-    {
-        return $this->belongsTo(RestockOrder::class);
-    }
+    protected $fillable = [
+        'restock_order_id', 'product_id', 'quantity'
+    ];
 
     public function product()
     {
