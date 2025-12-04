@@ -1,188 +1,141 @@
-<div align="center">
-
-📦 GUDANG JAYA
-
+# 📦 Gudang Jaya  
 Sistem Manajemen Gudang Terintegrasi (WMS)
 
-</div>
+[![Laravel](https://img.shields.io/badge/Laravel-11-red?style=for-the-badge&logo=laravel)](https://laravel.com/)  
+[![PHP](https://img.shields.io/badge/PHP-8.1%2B-orange?style=for-the-badge&logo=php)](https://www.php.net/)  
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=for-the-badge&logo=mysql)](https://www.mysql.com/)  
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
-📖 Tentang Aplikasi
+---
 
-Gudang Jaya adalah aplikasi web Warehouse Management System (WMS) modern yang dirancang untuk menangani kompleksitas operasional gudang. Aplikasi ini memisahkan peran secara tegas antara administrasi, operasional fisik, dan manajemen stok dengan alur kerja digital yang terstruktur.
+## Tentang Aplikasi
+Gudang Jaya adalah aplikasi web **Warehouse Management System (WMS)** modern yang dirancang untuk menangani kompleksitas operasional gudang. Aplikasi ini memisahkan peran secara tegas antara administrasi, operasional fisik, dan manajemen stok — dengan alur kerja digital yang terstruktur dan aman.
 
-💡 Fokus Utama: Keamanan data dengan validasi berlapis (Maker-Checker Principle) dan integrasi langsung dengan supplier.
+Sistem ini menerapkan:
+- **Validasi berlapis (Maker-Checker Principle)**
+- **Integrasi dengan Supplier**
+- **Audit fisik untuk semua barang masuk**
 
-🚀 Fitur Unggulan
+---
 
-1. Sistem Multi-Role (RBAC)
+## Fitur Unggulan
 
-Akses fitur dibatasi secara ketat berdasarkan peran pengguna untuk menjaga integritas data:
+- **Sistem Multi-Role (RBAC)**  
+  Setiap peran memiliki akses dan fitur yang berbeda.
 
-Role
+- **Manajemen Transaksi (Maker-Checker)**  
+  Semua transaksi stok harus dibuat oleh staff dan disetujui manager sebelum perubahan terjadi.
 
-Tanggung Jawab & Hak Akses
+- **Siklus Restock & Audit Fisik**  
+  PO → Konfirmasi Supplier → Barang Tiba → Input Fisik → Approval Manager.
 
-👑 Admin
+- **Keamanan Tingkat Lanjut**  
+  Middleware user aktif, validasi stok, dan proteksi transaksi.
 
-Super-user. Mengelola user, menyetujui pendaftaran supplier, dan akses laporan penuh.
+---
 
-👔 Manager
+## Role & Hak Akses
 
-Pengawas. Menyetujui transaksi staff, membuat PO (Restock), dan memantau stok.
+| Role       | Hak & Tanggung Jawab |
+|------------|----------------------|
+| **Admin**   | Kelola user, aktifkan supplier, akses laporan penuh. |
+| **Manager** | Membuat PO, menyetujui transaksi, memantau stok. |
+| **Staff**   | Input transaksi masuk/keluar berdasarkan fisik. |
+| **Supplier**| Melihat & mengkonfirmasi PO. |
 
-👷 Staff
+---
 
-Garda depan. Input fisik barang masuk/keluar. Tidak bisa mengubah stok tanpa persetujuan.
+## Alur Kerja Sistem
 
-🚚 Supplier
+### A. Barang Masuk (Restock)
+1. Manager → Buat **PO** → status: `Pending`
+2. Supplier → Login → klik **“Terima Pesanan”** → status: `Confirmed`
+3. Manager → Set → **“Received”** saat barang tiba
+4. Staff → Input **Transaksi Masuk**
+5. Manager → **Approve** → Stok bertambah
 
-Eksternal. Login khusus untuk melihat dan mengkonfirmasi pesanan (PO) dari gudang.
+### B. Barang Keluar (Pengeluaran)
+1. Staff → Input **Transaksi Keluar** → status: `Pending`
+2. Manager → Review → **Approve** → Stok berkurang
 
-2. Manajemen Transaksi (Maker-Checker)
+---
 
-Mencegah kecurangan dan kesalahan input stok dengan alur kerja bertingkat:
+## Persyaratan Sistem
 
-✅ Input: Staff membuat transaksi ➔ Status Pending.
+- PHP ≥ 8.1  
+- Composer  
+- Node.js & NPM  
+- MySQL / MariaDB  
+- Web Server / Laravel built-in server  
 
-✅ Verifikasi: Manager menerima notifikasi real-time.
+---
 
-✅ Approval: Manager menyetujui transaksi ➔ Stok Database Berubah.
+## Cara Instalasi (Local Development)
 
-3. Siklus Restock & Audit Fisik
-
-Alur pengadaan barang yang realistis (tidak otomatis):
-
-Manager buat PO ➔ Supplier Konfirmasi ➔ Barang Dikirim.
-
-Saat barang tiba, sistem TIDAK otomatis menambah stok.
-
-Staff wajib melakukan Input Transaksi Masuk berdasarkan fisik barang yang diterima (Audit) untuk menjaga akurasi data.
-
-4. Keamanan Tingkat Lanjut
-
-🛡️ Middleware Satpam: Mencegah user yang statusnya "Belum Aktif" (misal Supplier baru daftar) untuk login meskipun password benar.
-
-🔒 Validasi Stok: Mencegah transaksi keluar jika stok di sistem tidak mencukupi.
-
-⚙️ Persyaratan Sistem
-
-Sebelum memulai, pastikan komputer Anda memiliki:
-
-PHP >= 8.1
-
-Composer
-
-Node.js & NPM
-
-MySQL Database
-
-🛠️ Cara Instalasi
-
-Ikuti langkah-langkah ini untuk menjalankan proyek di komputer lokal:
-
-1. Clone Repositori
-
-git clone [https://github.com/username/gudang-jaya.git](https://github.com/username/gudang-jaya.git)
+```bash
+# Clone repository
+git clone https://github.com/username/gudang-jaya.git
 cd gudang-jaya
 
-
-2. Install Dependencies
-
+# Install dependencies
 composer install
 npm install && npm run build
 
-
-3. Konfigurasi Environment
-Salin file contoh dan atur koneksi database Anda.
-
+# Konfigurasi environment
 cp .env.example .env
+# Edit .env sesuai konfigurasi database Anda
 
-
-Buka file .env dan sesuaikan:
-
-DB_DATABASE=nama_database_anda
-DB_USERNAME=root
-DB_PASSWORD=
-APP_URL=[http://127.0.0.1:8000](http://127.0.0.1:8000)
-
-
-4. Generate Key & Link Storage
-
+# Generate key & link storage
 php artisan key:generate
 php artisan storage:link
 
-
-5. Migrasi & Seeding (PENTING)
-Perintah ini akan membuat tabel dan akun dummy untuk pengujian.
-
+# Migrasi database + seeding
 php artisan migrate:fresh --seed
 
-
-6. Jalankan Server
-
+# Jalankan server
 php artisan serve
 
+#Akses aplikasi via:
 
-Akses aplikasi di: http://127.0.0.1:8000
+http://127.0.0.1:8000
+```
 
-🔑 Akun Pengujian (Demo)
+## Akun Demo
+Role |  Email	             |  Password    |
+|---------|-------------------|--------------|
+| Admin	| admin@gudang.com | adminpass |
+| Manager	| manager1@gudang.com | manager1pass| 
+| Staff	| staff1@email.com | staff1pass |
+| Supplier	| supplier1@gudang.com | supplier1pass |
 
-Gunakan akun berikut untuk login dan menguji setiap fitur:
+User baru hasil register akan berstatus Non-Aktif dan harus diaktifkan oleh Admin terlebih dahulu.
 
-Role
 
-Email
+## Struktur Folder
+```bash
+├── app/
+│   ├── Http/
+│   ├── Models/
+│   └── ...
+├── database/
+│   ├── migrations/
+│   ├── seeders/
+├── resources/
+│   ├── views/
+│   ├── js/
+│   └── css/
+├── routes/
+│   ├── web.php
+│   └── api.php
+└── public/
+```
+```
+Panduan Penggunaan
 
-Password
+Admin → aktifkan supplier, kelola user.
 
-Admin
+Manager → buat PO, approve transaksi.
 
-admin@gudang.com
+Staff → input transaksi masuk/keluar.
 
-password
-
-Manager
-
-manager@gudang.com
-
-password
-
-Staff
-
-staff@gudang.com
-
-password
-
-Supplier
-
-supplier@maju.com
-
-password
-
-⚠️ Catatan Penting:
-Jika Anda mencoba fitur Register, akun baru akan berstatus Non-Aktif (Supplier Pending). Anda harus login sebagai Admin terlebih dahulu untuk menyetujuinya di menu "Kelola Pengguna".
-
-🔄 Alur Kerja Sistem
-
-A. Barang Masuk (Restock)
-
-Manager: Buat Restock Order (PO) ➔ Status: Pending.
-
-Supplier: Login & Klik "Terima Pesanan" ➔ Status: Confirmed.
-
-Manager: Ubah status jadi Received saat truk tiba.
-
-Staff: Dapat notifikasi di dashboard ➔ Input "Transaksi Masuk" sesuai jumlah fisik.
-
-Manager: Approve transaksi Staff ➔ Stok Bertambah.
-
-B. Barang Keluar (Penjualan)
-
-Staff: Input "Transaksi Keluar" ➔ Status: Pending.
-
-Manager: Cek data & Approve ➔ Stok Berkurang.
-
-<div align="center">
-<p>Dikembangkan untuk Tugas Individual Project 7</p>
-<p><strong>Manajemen Gudang 2025</strong></p>
-</div>
+Supplier → konfirmasi PO.
