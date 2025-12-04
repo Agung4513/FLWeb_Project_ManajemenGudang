@@ -1,59 +1,141 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📦 Gudang Jaya  
+Sistem Manajemen Gudang Terintegrasi (WMS)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![Laravel](https://img.shields.io/badge/Laravel-11-red?style=for-the-badge&logo=laravel)](https://laravel.com/)  
+[![PHP](https://img.shields.io/badge/PHP-8.1%2B-orange?style=for-the-badge&logo=php)](https://www.php.net/)  
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=for-the-badge&logo=mysql)](https://www.mysql.com/)  
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tentang Aplikasi
+Gudang Jaya adalah aplikasi web **Warehouse Management System (WMS)** modern yang dirancang untuk menangani kompleksitas operasional gudang. Aplikasi ini memisahkan peran secara tegas antara administrasi, operasional fisik, dan manajemen stok — dengan alur kerja digital yang terstruktur dan aman.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Sistem ini menerapkan:
+- **Validasi berlapis (Maker-Checker Principle)**
+- **Integrasi dengan Supplier**
+- **Audit fisik untuk semua barang masuk**
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Fitur Unggulan
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- **Sistem Multi-Role (RBAC)**  
+  Setiap peran memiliki akses dan fitur yang berbeda.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Manajemen Transaksi (Maker-Checker)**  
+  Semua transaksi stok harus dibuat oleh staff dan disetujui manager sebelum perubahan terjadi.
 
-## Laravel Sponsors
+- **Siklus Restock & Audit Fisik**  
+  PO → Konfirmasi Supplier → Barang Tiba → Input Fisik → Approval Manager.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Keamanan Tingkat Lanjut**  
+  Middleware user aktif, validasi stok, dan proteksi transaksi.
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Role & Hak Akses
 
-## Contributing
+| Role       | Hak & Tanggung Jawab |
+|------------|----------------------|
+| **Admin**   | Kelola user, aktifkan supplier, akses laporan penuh. |
+| **Manager** | Membuat PO, menyetujui transaksi, memantau stok. |
+| **Staff**   | Input transaksi masuk/keluar berdasarkan fisik. |
+| **Supplier**| Melihat & mengkonfirmasi PO. |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Alur Kerja Sistem
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### A. Barang Masuk (Restock)
+1. Manager → Buat **PO** → status: `Pending`
+2. Supplier → Login → klik **“Terima Pesanan”** → status: `Confirmed`
+3. Manager → Set → **“Received”** saat barang tiba
+4. Staff → Input **Transaksi Masuk**
+5. Manager → **Approve** → Stok bertambah
 
-## Security Vulnerabilities
+### B. Barang Keluar (Pengeluaran)
+1. Staff → Input **Transaksi Keluar** → status: `Pending`
+2. Manager → Review → **Approve** → Stok berkurang
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Persyaratan Sistem
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- PHP ≥ 8.1  
+- Composer  
+- Node.js & NPM  
+- MySQL / MariaDB  
+- Web Server / Laravel built-in server  
+
+---
+
+## Cara Instalasi (Local Development)
+
+```bash
+# Clone repository
+git clone https://github.com/username/gudang-jaya.git
+cd gudang-jaya
+
+# Install dependencies
+composer install
+npm install && npm run build
+
+# Konfigurasi environment
+cp .env.example .env
+# Edit .env sesuai konfigurasi database Anda
+
+# Generate key & link storage
+php artisan key:generate
+php artisan storage:link
+
+# Migrasi database + seeding
+php artisan migrate:fresh --seed
+
+# Jalankan server
+php artisan serve
+
+#Akses aplikasi via:
+
+http://127.0.0.1:8000
+```
+
+## Akun Demo
+Role |  Email	             |  Password    |
+|---------|-------------------|--------------|
+| Admin	| admin@gudang.com | adminpass |
+| Manager	| manager1@gudang.com | manager1pass| 
+| Staff	| staff1@email.com | staff1pass |
+| Supplier	| supplier1@gudang.com | supplier1pass |
+
+User baru hasil register akan berstatus Non-Aktif dan harus diaktifkan oleh Admin terlebih dahulu.
+
+
+## Struktur Folder
+```bash
+├── app/
+│   ├── Http/
+│   ├── Models/
+│   └── ...
+├── database/
+│   ├── migrations/
+│   ├── seeders/
+├── resources/
+│   ├── views/
+│   ├── js/
+│   └── css/
+├── routes/
+│   ├── web.php
+│   └── api.php
+└── public/
+```
+```
+Panduan Penggunaan
+
+Admin → aktifkan supplier, kelola user.
+
+Manager → buat PO, approve transaksi.
+
+Staff → input transaksi masuk/keluar.
+
+Supplier → konfirmasi PO.
