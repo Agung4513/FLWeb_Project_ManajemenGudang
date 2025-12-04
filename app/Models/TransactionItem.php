@@ -10,12 +10,20 @@ class TransactionItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'transaction_id', 'product_id', 'quantity',
-        'price_at_transaction', 'subtotal'
+        'transaction_id',
+        'product_id',
+        'quantity',
+        'price_at_transaction',
+        'subtotal'
     ];
 
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class);
     }
 }

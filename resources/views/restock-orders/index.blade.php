@@ -15,7 +15,7 @@
                 <p class="text-amber-100 mt-2 text-lg">Kelola pengadaan barang dari Supplier.</p>
             </div>
 
-            @if(in_array(auth()->user()->role, ['admin', 'manager']))
+            @if(auth()->user()->role === 'manager')
             <a href="{{ route('restock-orders.create') }}"
                class="group bg-white text-orange-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-orange-50 transition shadow-lg transform hover:-translate-y-1 flex items-center">
                 <i class="fa-solid fa-plus mr-2 group-hover:rotate-90 transition-transform"></i>

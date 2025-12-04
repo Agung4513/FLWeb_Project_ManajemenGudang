@@ -6,7 +6,8 @@ use App\Models\Transaction;
 use App\Models\Product;
 use App\Models\TransactionItem;
 use App\Models\User;
-use App\Models\RestockOrder; // Pastikan ini di-import
+use App\Models\RestockOrder;
+use App\Models\RestockItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -19,39 +20,37 @@ class TransactionController extends Controller
         return 'staff.transactions.index';
     }
 
-    // === CREATE (HANYA STAFF) ===
     public function create(Request $request)
     {
-        if (auth()->user()->role !== 'staff') abort(403);
+        if (auth()->user()->role !== 'staff') {
+            abort(403, 'AKSES DITOLAK. Hanya Staff Gudang yang boleh mencatat transaksi fisik.');
+        }
 
         $products = Product::orderBy('name')->get();
         $suppliers = User::where('role', 'supplier')->where('is_active', true)->get();
 
-        // LOGIKA AUTO-FILL DARI RESTOCK ORDER
         $restockOrder = null;
-
-        // Jika ada parameter ?restock_id=... di URL
         if ($request->has('restock_id')) {
-            $restockOrder = RestockOrder::with('items')
-                ->where('id', $request->restock_id)
+            $restockOrder = RestockOrder::with('items')->where('id', $request->restock_id)
                 ->where('status', 'received')
-                // Pastikan PO ini BELUM punya transaksi (agar tidak double)
                 ->whereDoesntHave('transaction')
                 ->first();
 
             if (!$restockOrder) {
                 return redirect()->route('staff.transactions.create')
-                    ->with('error', 'Restock Order tidak valid atau sudah diproses sebelumnya.');
+                    ->with('error', 'Restock Order tidak valid atau sudah diproses.');
             }
         }
 
         return view('transactions.create', compact('products', 'suppliers', 'restockOrder'));
     }
 
-    // === STORE (HANYA STAFF) ===
     public function store(Request $request)
     {
         if (auth()->user()->role !== 'staff') abort(403);
+        if ($request->type === 'incoming' && !$request->restock_order_id) {
+            return back()->with('error', 'GAGAL: Transaksi Barang Masuk (Pembelian) hanya boleh dibuat melalui proses Notifikasi Restock Order.')->withInput();
+        }
 
         $rules = [
             'type' => 'required|in:incoming,outgoing',
@@ -60,10 +59,9 @@ class TransactionController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
-            'restock_order_id' => 'nullable|exists:restock_orders,id', // Validasi ID PO
+            'restock_order_id' => 'nullable|exists:restock_orders,id',
         ];
 
-        // Validasi conditional
         if ($request->type === 'outgoing') {
             $rules['customer_name'] = 'required|string|max:255';
         } else {
@@ -75,18 +73,69 @@ class TransactionController extends Controller
         try {
             DB::beginTransaction();
 
-            // Cek Double Input untuk PO yang sama (Safety Check)
             if ($request->restock_order_id) {
-                $exists = Transaction::where('restock_order_id', $request->restock_order_id)->exists();
-                if ($exists) {
-                    throw new \Exception("Transaksi untuk PO ini sudah pernah dibuat!");
+                if (Transaction::where('restock_order_id', $request->restock_order_id)->exists()) {
+                    throw new \Exception("Transaksi untuk PO ini sudah pernah dibuat sebelumnya!");
+                }
+
+                $poItems = RestockItem::where('restock_order_id', $request->restock_order_id)
+                    ->get()
+                    ->keyBy('product_id');
+
+                foreach ($request->items as $inputItem) {
+                    $prodId = $inputItem['product_id'];
+                    $inputQty = $inputItem['quantity'];
+
+                    if (!isset($poItems[$prodId])) {
+                        $prodName = Product::find($prodId)->name ?? 'ID: '.$prodId;
+                        throw new \Exception("ERROR: Produk '$prodName' tidak ada dalam daftar PO asli.");
+                    }
+
+                    $maxQty = $poItems[$prodId]->quantity;
+                    if ($inputQty > $maxQty) {
+                        $prodName = Product::find($prodId)->name ?? 'Unknown';
+                        throw new \Exception("ERROR: Jumlah input '$prodName' ($inputQty) melebihi jumlah di PO ($maxQty).");
+                    }
                 }
             }
 
-            $count = Transaction::whereDate('created_at', today())->count() + 1;
-            $trxNumber = 'TRX-' . date('Ymd') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+            if ($request->type === 'outgoing') {
+                foreach ($request->items as $itemData) {
+                    $productCheck = Product::find($itemData['product_id']);
 
-            // Simpan Header
+                    if (!$productCheck) {
+                        throw new \Exception("Produk ID {$itemData['product_id']} tidak ditemukan.");
+                    }
+
+                    if ($productCheck->current_stock < $itemData['quantity']) {
+                        throw new \Exception("ERROR: Stok produk '{$productCheck->name}' tidak cukup. (Tersedia: {$productCheck->current_stock}, Diminta: {$itemData['quantity']})");
+                    }
+                }
+            }
+
+            $dateCode = date('Ymd');
+            $prefix = 'TRX-' . $dateCode . '-';
+
+            $lastTransaction = DB::table('transactions')
+                ->where('transaction_number', 'like', $prefix . '%')
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($lastTransaction) {
+                $lastSequence = (int) substr($lastTransaction->transaction_number, -4);
+                $nextSequence = $lastSequence + 1;
+            } else {
+                $nextSequence = 1;
+            }
+
+            do {
+                $trxNumber = $prefix . str_pad($nextSequence, 4, '0', STR_PAD_LEFT);
+                $exists = DB::table('transactions')->where('transaction_number', $trxNumber)->exists();
+                if ($exists) {
+                    $nextSequence++;
+                }
+            } while ($exists);
+
             $transaction = Transaction::create([
                 'transaction_number' => $trxNumber,
                 'type' => $request->type,
@@ -94,15 +143,15 @@ class TransactionController extends Controller
                 'user_id' => auth()->id(),
                 'supplier_id' => $request->type === 'incoming' ? $request->supplier_id : null,
                 'customer_name' => $request->type === 'outgoing' ? $request->customer_name : null,
-                'restock_order_id' => $request->restock_order_id, // SIMPAN HUBUNGAN KE PO
+                'restock_order_id' => $request->restock_order_id,
                 'status' => 'pending',
                 'notes' => $request->description,
                 'total_amount' => 0,
+                'total_profit' => 0,
             ]);
 
             $totalAmount = 0;
 
-            // Simpan Detail
             foreach ($request->items as $item) {
                 $subtotal = $item['quantity'] * $item['price'];
                 $totalAmount += $subtotal;
@@ -121,65 +170,86 @@ class TransactionController extends Controller
             DB::commit();
 
             return redirect()->route('staff.transactions.index')
-                ->with('success', "Transaksi berhasil dicatat! Data telah tersinkron dengan Restock Order.");
+                ->with('success', "Berhasil! Transaksi $trxNumber telah dibuat.");
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan: ' . $e->getMessage())->withInput();
+            return back()->with('error', 'Gagal menyimpan transaksi: ' . $e->getMessage())->withInput();
         }
     }
-
-    // ... Method Index, Show, Approve, Reject, Export biarkan seperti sebelumnya ...
-    public function staffIndex() {
-        $transactions = Transaction::with(['user', 'items.product'])->where('user_id', auth()->id())->latest()->paginate(15);
-        return view('transactions.index', compact('transactions'));
-    }
-    public function managerIndex() {
-        if (auth()->user()->role !== 'manager') abort(403);
-        $transactions = Transaction::with(['user', 'items.product'])->latest()->paginate(20);
-        return view('transactions.index', compact('transactions'));
-    }
-    public function adminIndex() {
-        if (auth()->user()->role !== 'admin') abort(403);
-        $transactions = Transaction::with(['user', 'items.product'])->latest()->paginate(30);
-        return view('transactions.index', compact('transactions'));
-    }
-    public function show(Transaction $transaction) {
-        $transaction->load(['items.product', 'user', 'supplier', 'restockOrder']);
-        return view('transactions.show', compact('transaction'));
-    }
-    public function managerShow(Transaction $transaction) { return $this->show($transaction); }
-    public function staffShow(Transaction $transaction) { return $this->show($transaction); }
-    public function adminShow(Transaction $transaction) { return $this->show($transaction); }
 
     public function approve(Transaction $transaction) {
         if (auth()->user()->role !== 'manager') abort(403);
         if ($transaction->status !== 'pending') return back()->with('error', 'Transaksi sudah diproses!');
 
-        DB::transaction(function () use ($transaction) {
+        $transaction->load(['items.product' => function ($query) {
+            if (method_exists(\App\Models\Product::class, 'bootSoftDeletes')) {
+                $query->withTrashed();
+            }
+        }]);
+
+        DB::beginTransaction();
+        try {
             foreach ($transaction->items as $item) {
+                $product = $item->product;
+                if (!$product) throw new \Exception("Produk ID {$item->product_id} telah dihapus permanen.");
+
                 if ($transaction->type === 'outgoing') {
-                    if($item->product->current_stock < $item->quantity) {
-                        throw new \Exception("Stok {$item->product->name} kurang!");
+                    if($product->current_stock < $item->quantity) {
+                        throw new \Exception("Stok '{$product->name}' tidak cukup!");
                     }
-                    $item->product->decrement('current_stock', $item->quantity);
+                    $product->decrement('current_stock', $item->quantity);
                 } else {
-                    $item->product->increment('current_stock', $item->quantity);
+                    $product->increment('current_stock', $item->quantity);
                 }
             }
             $transaction->update(['status' => 'approved']);
-        });
-        return back()->with('success', 'Transaksi disetujui.');
+            DB::commit();
+            return back()->with('success', 'Transaksi disetujui! Stok diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
     }
 
-    public function reject(Transaction $transaction, Request $request) {
+    public function reject(Transaction $transaction) {
         if (auth()->user()->role !== 'manager') abort(403);
         $transaction->delete();
-        return redirect()->route('manager.transactions.index')->with('success', 'Transaksi ditolak dan dihapus.');
+        return redirect()->route('manager.transactions.index')->with('success', 'Ditolak.');
     }
 
-    public function exportExcel() {
-        if (auth()->user()->role !== 'admin') abort(403);
-        return Excel::download(new TransactionsExport, 'laporan.xlsx');
+    private function getTransactionQuery() {
+        return Transaction::with(['user', 'items.product' => function($q) {
+            if (method_exists(\App\Models\Product::class, 'bootSoftDeletes')) {
+                $q->withTrashed();
+            }
+        }]);
     }
+
+    public function staffIndex() {
+        $transactions = $this->getTransactionQuery()->where('user_id', auth()->id())->latest()->paginate(15);
+        return view('transactions.index', compact('transactions'));
+    }
+    public function managerIndex() {
+        if (auth()->user()->role !== 'manager') abort(403);
+        $transactions = $this->getTransactionQuery()->latest()->paginate(20);
+        return view('transactions.index', compact('transactions'));
+    }
+    public function adminIndex() {
+        if (auth()->user()->role !== 'admin') abort(403);
+        $transactions = $this->getTransactionQuery()->latest()->paginate(30);
+        return view('transactions.index', compact('transactions'));
+    }
+    public function show(Transaction $transaction) {
+        $transaction->load(['items.product' => function($q){
+            if (method_exists(\App\Models\Product::class, 'bootSoftDeletes')) {
+                $q->withTrashed();
+            }
+        }, 'user', 'supplier', 'restockOrder']);
+        return view('transactions.show', compact('transaction'));
+    }
+    public function managerShow(Transaction $transaction) { return $this->show($transaction); }
+    public function staffShow(Transaction $transaction) { return $this->show($transaction); }
+    public function adminShow(Transaction $transaction) { return $this->show($transaction); }
+    public function exportExcel() { /* ... */ }
 }

@@ -5,18 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Gudang Jaya - WMS</title>
 
-    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="font-sans antialiased bg-slate-900 text-white selection:bg-indigo-500 selection:text-white">
 
-    <!-- Background Effects -->
     <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-600/30 rounded-full blur-3xl mix-blend-screen animate-pulse"></div>
         <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-3xl mix-blend-screen animate-pulse" style="animation-delay: 2s"></div>
@@ -24,7 +21,6 @@
 
     <div class="relative z-10 min-h-screen flex flex-col justify-center items-center px-6 py-12">
 
-        <!-- Logo / Brand Area -->
         <div class="text-center mb-10 animate-fade-in-down">
             <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl shadow-2xl mb-6 transform hover:rotate-6 transition duration-500 cursor-default">
                 <i class="fa-solid fa-boxes-stacked text-4xl text-white"></i>
@@ -37,11 +33,9 @@
             </p>
         </div>
 
-        <!-- Main Card -->
         <div class="w-full max-w-4xl bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden p-1">
             <div class="grid grid-cols-1 md:grid-cols-2">
 
-                <!-- Left: Login/Action -->
                 <div class="p-10 md:p-12 flex flex-col justify-center">
                     <h2 class="text-3xl font-bold mb-4">Akses Sistem</h2>
                     <p class="text-slate-400 mb-8 leading-relaxed">
@@ -67,7 +61,6 @@
                     </div>
                 </div>
 
-                <!-- Right: Features / Visual -->
                 <div class="bg-gradient-to-br from-indigo-900/50 to-purple-900/50 p-10 md:p-12 flex flex-col justify-center border-t md:border-t-0 md:border-l border-white/5">
                     <h3 class="text-lg font-bold text-white mb-6 uppercase tracking-wider text-xs opacity-70">Fitur Unggulan</h3>
 
@@ -105,7 +98,6 @@
             </div>
         </div>
 
-        <!-- Footer -->
         <footer class="mt-12 text-center">
             <p class="text-slate-500 text-sm">
                 &copy; {{ date('Y') }} Gudang Jaya. Sistem Manajemen Terpadu.

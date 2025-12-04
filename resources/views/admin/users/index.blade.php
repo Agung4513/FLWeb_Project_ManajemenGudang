@@ -58,11 +58,19 @@
                 <p class="text-sm text-slate-500 mt-1">Kelola akses Staff, Manager, dan Supplier.</p>
             </div>
 
-            @if(session('success'))
-            <div class="mt-4 md:mt-0 px-4 py-2 bg-emerald-100 text-emerald-700 text-sm font-bold rounded-lg flex items-center shadow-sm">
-                <i class="fa-solid fa-check-circle mr-2"></i> {{ session('success') }}
+            <div class="mt-4 md:mt-0 flex flex-col gap-2">
+                @if(session('success'))
+                <div class="px-4 py-2 bg-emerald-100 text-emerald-700 text-sm font-bold rounded-lg flex items-center shadow-sm">
+                    <i class="fa-solid fa-check-circle mr-2"></i> {{ session('success') }}
+                </div>
+                @endif
+
+                @if(session('error'))
+                <div class="px-4 py-2 bg-red-100 text-red-700 text-sm font-bold rounded-lg flex items-center shadow-sm animate-pulse">
+                    <i class="fa-solid fa-circle-exclamation mr-2"></i> {{ session('error') }}
+                </div>
+                @endif
             </div>
-            @endif
         </div>
 
         <div class="overflow-x-auto">
@@ -79,6 +87,7 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse($users as $user)
                     <tr class="hover:bg-slate-50/80 transition duration-200 group">
+
                         <td class="px-8 py-5">
                             <div class="flex items-center">
                                 <div class="h-12 w-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 text-white flex items-center justify-center font-bold text-lg shadow-md mr-4 group-hover:scale-110 transition">
@@ -133,7 +142,7 @@
                                     </form>
                                 @endif
 
-                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Hapus user {{ $user->name }} permanen?');">
+                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Hapus user {{ $user->name }}?');">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 px-3 py-2 rounded-xl font-bold transition text-xs" title="Hapus User">
                                         <i class="fa-solid fa-trash"></i>

@@ -8,6 +8,20 @@
         <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Daftar
     </a>
 
+    @if ($errors->any())
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-xl shadow-sm animate-fade-in-down">
+            <div class="flex items-center mb-2">
+                <i class="fa-solid fa-circle-exclamation text-red-600 mr-2"></i>
+                <h3 class="text-red-800 font-bold">Gagal Membuat PO</h3>
+            </div>
+            <ul class="list-disc list-inside text-red-700 text-sm ml-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
         <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-6 text-white">
             <h2 class="text-2xl font-extrabold">Form Purchase Order</h2>
@@ -20,16 +34,27 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2">Pilih Supplier <span class="text-red-500">*</span></label>
-                    <select name="supplier_id" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-amber-500 focus:outline-none" required>
+                    <select name="supplier_id" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-amber-500 focus:outline-none @error('supplier_id') border-red-500 @enderror" required>
                         <option value="">-- Pilih Supplier --</option>
                         @foreach($suppliers as $s)
-                            <option value="{{ $s->id }}">{{ $s->name }}</option>
+                            <option value="{{ $s->id }}" {{ old('supplier_id') == $s->id ? 'selected' : '' }}>{{ $s->name }}</option>
                         @endforeach
                     </select>
+                    @error('supplier_id')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2">Estimasi Tiba <span class="text-red-500">*</span></label>
-                    <input type="date" name="expected_delivery_date" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-amber-500 focus:outline-none" required>
+                    <input type="date" name="expected_delivery_date"
+                           min="{{ date('Y-m-d') }}"
+                           value="{{ old('expected_delivery_date') }}"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-amber-500 focus:outline-none @error('expected_delivery_date') border-red-500 @enderror"
+                           required>
+                    <p class="text-xs text-slate-400 mt-1">Tanggal harus hari ini atau masa depan.</p>
+                    @error('expected_delivery_date')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
@@ -42,28 +67,52 @@
                 </div>
 
                 <div id="items-container" class="space-y-4">
-                    <div class="item-row grid grid-cols-12 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <div class="col-span-8">
-                            <select name="items[0][product_id]" class="w-full px-3 py-2 rounded-lg border focus:outline-none" required>
-                                <option value="">Pilih Produk</option>
-                                @foreach($products as $p)
-                                    <option value="{{ $p->id }}">{{ $p->sku }} - {{ $p->name }} (Sisa: {{ $p->current_stock }})</option>
-                                @endforeach
-                            </select>
+                    @if(old('items'))
+                        @foreach(old('items') as $index => $item)
+                            <div class="item-row grid grid-cols-12 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <div class="col-span-8">
+                                    <select name="items[{{ $index }}][product_id]" class="w-full px-3 py-2 rounded-lg border focus:outline-none" required>
+                                        <option value="">Pilih Produk</option>
+                                        @foreach($products as $p)
+                                            <option value="{{ $p->id }}" {{ $item['product_id'] == $p->id ? 'selected' : '' }}>
+                                                {{ $p->sku }} - {{ $p->name }} (Sisa: {{ $p->current_stock }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-span-3">
+                                    <input type="number" name="items[{{ $index }}][quantity]" value="{{ $item['quantity'] }}" class="w-full px-3 py-2 text-center rounded-lg border" placeholder="Qty" min="1" required>
+                                </div>
+                                <div class="col-span-1 text-right">
+                                    <button type="button" class="remove-item text-red-500 hover:text-red-700 font-bold text-xl">&times;</button>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="item-row grid grid-cols-12 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div class="col-span-8">
+                                <select name="items[0][product_id]" class="w-full px-3 py-2 rounded-lg border focus:outline-none" required>
+                                    <option value="">Pilih Produk</option>
+                                    @foreach($products as $p)
+                                        <option value="{{ $p->id }}">{{ $p->sku }} - {{ $p->name }} (Sisa: {{ $p->current_stock }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-span-3">
+                                <input type="number" name="items[0][quantity]" class="w-full px-3 py-2 text-center rounded-lg border" placeholder="Qty" min="1" required>
+                            </div>
+                            <div class="col-span-1 text-right">
+                                <button type="button" class="remove-item text-red-500 hover:text-red-700 font-bold text-xl">&times;</button>
+                            </div>
                         </div>
-                        <div class="col-span-3">
-                            <input type="number" name="items[0][quantity]" class="w-full px-3 py-2 text-center rounded-lg border" placeholder="Qty" min="1" required>
-                        </div>
-                        <div class="col-span-1 text-right">
-                            <button type="button" class="remove-item text-red-500 hover:text-red-700 font-bold text-xl">&times;</button>
-                        </div>
-                    </div>
+                    @endif
                 </div>
+                @error('items') <p class="text-red-500 text-sm mt-2">{{ $message }}</p> @enderror
             </div>
 
             <div class="mb-8">
                 <label class="block text-sm font-bold text-slate-700 mb-2">Catatan Tambahan</label>
-                <textarea name="notes" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-amber-500 focus:outline-none"></textarea>
+                <textarea name="notes" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl font-medium focus:border-amber-500 focus:outline-none">{{ old('notes') }}</textarea>
             </div>
 
             <div class="flex justify-end pt-6 border-t border-gray-100">
@@ -78,7 +127,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const products = @json($products);
-    let itemIndex = 1;
+    let itemIndex = {{ old('items') ? count(old('items')) : 1 }};
     const container = document.getElementById('items-container');
 
     function createRow(index) {

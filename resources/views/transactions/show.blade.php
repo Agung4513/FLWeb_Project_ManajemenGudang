@@ -5,26 +5,39 @@
 
 @section('content')
 <div class="max-w-5xl mx-auto py-8">
-    <a href="{{ route(auth()->user()->role . '.transactions.index') }}" class="inline-flex items-center text-slate-500 hover:text-indigo-600 font-medium mb-6 transition">
+
+    @php
+        $backRoute = auth()->user()->role == 'manager'
+            ? route('manager.transactions.index')
+            : (auth()->user()->role == 'admin' ? route('admin.transactions.index') : route('staff.transactions.index'));
+    @endphp
+
+    <a href="{{ $backRoute }}" class="inline-flex items-center text-slate-500 hover:text-indigo-600 font-medium mb-6 transition">
         <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Riwayat
     </a>
 
-    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">->
         <div class="px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-50">
             <div>
                 <h1 class="text-2xl font-black text-slate-800">{{ $transaction->transaction_number }}</h1>
                 <p class="text-slate-500 text-sm mt-1">
-                    Dibuat oleh <span class="font-bold text-slate-700">{{ $transaction->user->name }}</span> pada {{ \Carbon\Carbon::parse($transaction->date)->format('d F Y') }}
+                    Dibuat oleh <span class="font-bold text-slate-700">{{ $transaction->user->name ?? 'User Terhapus' }}</span>
+                    pada {{ \Carbon\Carbon::parse($transaction->date)->format('d F Y') }}
                 </p>
+                @if($transaction->restock_order_id)
+                    <div class="mt-2 inline-flex items-center bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg text-xs font-bold border border-indigo-200">
+                        <i class="fa-solid fa-link mr-2"></i> Terhubung dengan PO: {{ $transaction->restockOrder->po_number ?? 'PO Terhapus' }}
+                    </div>
+                @endif
             </div>
             <div class="mt-4 md:mt-0">
                 @if($transaction->status === 'pending')
                     <span class="px-4 py-2 rounded-xl bg-orange-100 text-orange-700 font-bold border border-orange-200 flex items-center shadow-sm">
                         <span class="w-2.5 h-2.5 bg-orange-500 rounded-full mr-2 animate-pulse"></span> Menunggu Approval
                     </span>
-                @elseif(in_array($transaction->status, ['approved', 'verified', 'completed']))
+                @elseif($transaction->status === 'approved')
                     <span class="px-4 py-2 rounded-xl bg-emerald-100 text-emerald-700 font-bold border border-emerald-200 flex items-center shadow-sm">
-                        <i class="fa-solid fa-check-circle mr-2"></i> Selesai / Disetujui
+                        <i class="fa-solid fa-check-circle mr-2"></i> Disetujui
                     </span>
                 @else
                     <span class="px-4 py-2 rounded-xl bg-red-100 text-red-700 font-bold border border-red-200 flex items-center shadow-sm">
@@ -45,7 +58,7 @@
             <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                 <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Pihak Terkait</p>
                 <p class="text-xl font-bold text-slate-800">
-                    {{ $transaction->customer_name ?? '-' }}
+                    {{ $transaction->customer_name ?? ($transaction->supplier->name ?? '-') }}
                 </p>
             </div>
 
@@ -73,11 +86,23 @@
                         @foreach($transaction->items as $item)
                         <tr>
                             <td class="px-6 py-4">
-                                <div class="font-bold text-slate-800">{{ $item->product->name }}</div>
-                                <div class="text-xs text-slate-500">{{ $item->product->sku }}</div>
+                                @if($item->product)
+                                    <div class="font-bold text-slate-800">
+                                        {{ $item->product->name }}
+                                        @if(method_exists($item->product, 'trashed') && $item->product->trashed())
+                                            <span class="ml-2 px-2 py-0.5 text-[10px] bg-red-100 text-red-600 rounded border border-red-200">Terhapus</span>
+                                        @endif
+                                    </div>
+                                    <div class="text-xs text-slate-500">{{ $item->product->sku }}</div>
+                                @else
+                                    <div class="font-bold text-red-500 italic">
+                                        <i class="fa-solid fa-ban mr-1"></i> Produk Telah Dihapus
+                                    </div>
+                                    <div class="text-xs text-red-300">Data Master Hilang</div>
+                                @endif
                             </td>
                             <td class="px-6 py-4 text-center font-bold text-slate-700">
-                                {{ $item->quantity }} {{ $item->product->unit }}
+                                {{ $item->quantity }} {{ $item->product->unit ?? 'Unit' }}
                             </td>
                             <td class="px-6 py-4 text-right text-slate-600">
                                 Rp {{ number_format($item->price_at_transaction, 0, ',', '.') }}

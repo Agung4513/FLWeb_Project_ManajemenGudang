@@ -83,7 +83,6 @@
     <h3 class="text-xl font-bold text-slate-700 border-l-4 border-emerald-500 pl-4">Menu Utama</h3>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-\
         <a href="{{ route('staff.transactions.create') }}"
            class="group relative overflow-hidden rounded-3xl bg-white p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition h-full flex flex-col justify-center items-center text-center">
             <div class="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 opacity-0 group-hover:opacity-100 transition duration-500"></div>
